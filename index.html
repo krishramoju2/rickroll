@@ -14,15 +14,15 @@
       background: black;
     }
 
-    /* Background video */
-    #rickrollVideo {
+    /* Fullscreen YouTube video */
+    #player {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      pointer-events: none;
       z-index: -1;
+      pointer-events: none; /* so buttons are clickable on top */
     }
 
     .volumeBtn {
@@ -70,7 +70,7 @@
 </head>
 <body>
 
-<!-- Rickroll video (initially muted) -->
+<!-- Rickroll full-screen video (initially muted) -->
 <div id="player"></div>
 
 <button class="volumeBtn">🔊 VOLUME</button>
@@ -82,7 +82,7 @@
   const chaosWords = ["LOUDER!", "WHY?!", "RAVE TIME!", "HELP!", "BRUH", "💀"];
   let audioUnmuted = false;
 
-  // YouTube API setup
+  // Load YouTube IFrame API
   let tag = document.createElement('script');
   tag.src = "https://www.youtube.com/iframe_api";
   document.body.appendChild(tag);
@@ -90,13 +90,16 @@
 
   function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
+      width: '100%',
+      height: '100%',
       videoId: 'dQw4w9WgXcQ',
       playerVars: {
         autoplay: 1,
         controls: 0,
         modestbranding: 1,
         loop: 1,
-        playlist: 'dQw4w9WgXcQ'
+        playlist: 'dQw4w9WgXcQ',
+        rel: 0
       },
       events: {
         onReady: (event) => event.target.mute()
@@ -106,18 +109,15 @@
 
   // Chaos function
   function chaos(btn) {
-    // Unmute audio first click
     if (!audioUnmuted && player) {
       player.unMute();
       audioUnmuted = true;
     }
 
-    // Increase volume visually
     volume += 25;
     if (volume > 100) volume = 0;
     bigVolume.innerText = `Volume: ${volume}%`;
 
-    // Randomly move and resize this button
     moveButton(btn);
 
     // Generate 1-3 extra buttons
@@ -130,7 +130,7 @@
       clone.addEventListener("click", () => chaos(clone));
     }
 
-    // Random flying text
+    // Flying text
     if (Math.random() > 0.5) {
       let txt = document.createElement("div");
       txt.className = "flyingText";
@@ -143,7 +143,6 @@
     }
   }
 
-  // Move button to random position & size
   function moveButton(btn) {
     const newFontSize = Math.random() * 3 + 1.5; // min 1.5rem
     btn.style.top = Math.random() * 85 + "%";
@@ -153,23 +152,18 @@
     btn.style.transform = `translate(-50%, -50%) rotate(${Math.random()*360}deg) scale(${Math.random()*1.5})`;
   }
 
-  // Cursor avoidance for all buttons
+  // Cursor avoidance
   document.body.addEventListener("mousemove", (e) => {
     document.querySelectorAll(".volumeBtn").forEach(btn => {
       let rect = btn.getBoundingClientRect();
       let dx = e.clientX - (rect.left + rect.width/2);
       let dy = e.clientY - (rect.top + rect.height/2);
       let dist = Math.sqrt(dx*dx + dy*dy);
-      if (dist < 120) {
-        moveButton(btn);
-      }
+      if (dist < 120) moveButton(btn);
     });
   });
 
-  // Initial button click
-  document.querySelector(".volumeBtn").addEventListener("click", function() {
-    chaos(this);
-  });
+  document.querySelector(".volumeBtn").addEventListener("click", () => chaos(document.querySelector(".volumeBtn")));
 </script>
 
 </body>
